@@ -1,0 +1,30 @@
+<%- include("partials/head") %>
+
+<section class="narrow">
+  <h1><%= role === "client" ? "Client sign in" : "Staff sign in" %></h1>
+  <p class="muted">
+    <%= role === "client"
+      ? "Your portal shows your business file, stage and reporting tradelines."
+      : "The workspace covers pipeline, business files, tradelines and Denovo leads." %>
+  </p>
+
+  <% if (error) { %><p class="flash bad"><%= error %></p><% } %>
+
+  <form method="post" action="<%= role === 'client' ? '/portal/login' : '/login' %>" class="card stack">
+    <input type="hidden" name="_csrf" value="<%= csrf %>" />
+    <input type="hidden" name="next" value="<%= next %>" />
+    <label>Email <input name="email" type="email" required autocomplete="username" /></label>
+    <label>Password <input name="password" type="password" required autocomplete="current-password" /></label>
+    <button class="btn" type="submit">Sign in</button>
+  </form>
+
+  <p class="muted small">
+    <% if (role === "client") { %>
+      Staff sign in is <a href="/login">here</a>.
+    <% } else { %>
+      Client sign in is <a href="/portal/login">here</a>.
+    <% } %>
+  </p>
+</section>
+
+<%- include("partials/foot") %>

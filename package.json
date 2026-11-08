@@ -1,0 +1,23 @@
+{
+  "name": "clearpath-business",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ClearPath Business — business credit build workspace, client portal and Denovo Credit intake handoff.",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server/index.js",
+    "dev": "node --watch --disable-warning=ExperimentalWarning server/index.js",
+    "seed": "node --disable-warning=ExperimentalWarning scripts/seed.js",
+    "reset": "node --disable-warning=ExperimentalWarning scripts/reset.js",
+    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.js",
+    "check": "node --check server/env.js && node --check server/security.js && node --check server/db.js && node --check server/util.js && node --check server/auth.js && node --check server/denovo.js && node --check server/index.js && node --check server/routes/intake.js && node --check server/routes/denovo.js && node --check server/routes/public.js && node --check server/routes/auth.js && node --check server/routes/admin.js && node --check server/routes/portal.js"
+  },
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "express": "^4.21.2"
+  },
+  "license": "AGPL-3.0-only"
+}

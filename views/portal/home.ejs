@@ -1,0 +1,117 @@
+<%- include("../partials/head") %>
+
+<% if (!business) { %>
+  <section class="narrow">
+    <h1>Your file is being set up</h1>
+    <p class="lede">
+      No business is linked to this login yet. Your ClearPath strategist will connect it before your
+      first review. Call <a href="tel:<%= product.phone.replace(/[^0-9+]/g, "") %>"><%= product.phone %></a>
+      if it has been more than a day.
+    </p>
+  </section>
+<% } else { %>
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Your business file</p>
+      <h1><%= business.name %></h1>
+      <p class="muted"><%= business.entity_type %> · DUNS <%= business.duns || "not requested" %></p>
+    </div>
+    <span class="badge big <%= stageClass(business.stage) %>"><%= stageTier(business.stage) %> · <%= stageName(business.stage) %></span>
+  </div>
+
+  <section class="card">
+    <h2>Build progress</h2>
+    <div class="progress"><span style="width: <%= percent(business.stage + 1, stages.length) %>%"></span></div>
+    <ol class="stages horizontal">
+      <% stages.forEach(function (stage) { %>
+        <li class="<%= stage.key <= business.stage ? "done" : "" %>">
+          <span class="tier"><%= stage.tier %></span>
+          <strong><%= stage.name %></strong>
+          <span class="muted"><%= stage.window %></span>
+        </li>
+      <% }); %>
+    </ol>
+  </section>
+
+  <section class="stats">
+    <div class="card stat"><strong><%= tradelines.length %></strong><span>Reporting tradelines</span></div>
+    <div class="card stat"><strong><%= bureaus.length ? bureaus[0].score : "—" %></strong><span>Latest bureau score</span></div>
+    <div class="card stat"><strong><%= tasks.filter(function (t) { return t.status !== "Done"; }).length %></strong><span>Open tasks</span></div>
+    <div class="card stat"><strong><%= money(business.funding_target) %></strong><span>Funding target</span></div>
+  </section>
+
+  <section class="grid-two">
+    <div class="card">
+      <h2>Tradelines</h2>
+      <table>
+        <thead><tr><th>Vendor</th><th>Type</th><th>Limit</th><th>Status</th></tr></thead>
+        <tbody>
+          <% tradelines.forEach(function (line) { %>
+            <tr>
+              <td><%= line.vendor %></td>
+              <td class="muted"><%= line.account_type %></td>
+              <td><%= money(line.limit_amount) %></td>
+              <td><span class="badge <%= statusClass(line.status) %>"><%= line.status %></span></td>
+            </tr>
+          <% }); %>
+          <% if (!tradelines.length) { %><tr><td colspan="4" class="muted">Nothing reporting yet — that is the next stage.</td></tr><% } %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Bureau scores</h2>
+      <table>
+        <thead><tr><th>Bureau</th><th>Metric</th><th>Score</th><th>Pulled</th></tr></thead>
+        <tbody>
+          <% bureaus.forEach(function (report) { %>
+            <tr>
+              <td><%= report.bureau %></td>
+              <td class="muted"><%= report.metric || "—" %></td>
+              <td><strong><%= report.score %></strong></td>
+              <td class="muted"><%= fmtDate(report.pulled_on) %></td>
+            </tr>
+          <% }); %>
+          <% if (!bureaus.length) { %><tr><td colspan="4" class="muted">No bureau pulls yet.</td></tr><% } %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="grid-two">
+    <div class="card">
+      <h2>What we need from you</h2>
+      <ul class="list">
+        <% tasks.forEach(function (task) { %>
+          <li>
+            <div>
+              <strong><%= task.title %></strong>
+              <span class="muted">due <%= fmtDay(task.due_on) %></span>
+            </div>
+            <span class="badge <%= task.status === "Done" ? "teal" : "amber" %>"><%= task.status %></span>
+          </li>
+        <% }); %>
+        <% if (!tasks.length) { %><li class="muted">Nothing open right now.</li><% } %>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Documents on file</h2>
+      <ul class="list">
+        <% documents.forEach(function (doc) { %>
+          <li>
+            <div><strong><%= doc.title %></strong><span class="muted"><%= doc.kind %></span></div>
+            <span class="badge <%= statusClass(doc.status) %>"><%= doc.status %></span>
+          </li>
+        <% }); %>
+        <% if (!documents.length) { %><li class="muted">No documents logged yet.</li><% } %>
+      </ul>
+      <p class="muted small">
+        Questions? Call <a href="tel:<%= product.phone.replace(/[^0-9+]/g, "") %>"><%= product.phone %></a>
+        or email <a href="mailto:<%= product.support %>"><%= product.support %></a>.
+      </p>
+    </div>
+  </section>
+<% } %>
+
+<%- include("../partials/foot") %>

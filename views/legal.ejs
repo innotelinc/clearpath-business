@@ -1,0 +1,16 @@
+<%- include("partials/head") %>
+
+<section class="narrow">
+  <p class="eyebrow">ClearPath Business</p>
+  <h1><%= doc.title %></h1>
+  <p class="lede"><%= doc.intro %></p>
+
+  <% doc.sections.forEach(function (section) { %>
+    <div class="card legal">
+      <h2><%= section[0] %></h2>
+      <p><%= section[1] %></p>
+    </div>
+  <% }); %>
+</section>
+
+<%- include("partials/foot") %>

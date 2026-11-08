@@ -1,0 +1,76 @@
+<%- include("../partials/head") %>
+
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Workspace</p>
+    <h1>Lead inbox</h1>
+    <p class="muted">Business credit inquiries from denovocredit.com and the ClearPath site.</p>
+  </div>
+</div>
+
+<section class="card">
+  <table>
+    <thead><tr><th>Who</th><th>Business</th><th>Interest</th><th>Source</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      <% leads.forEach(function (lead) { %>
+        <tr>
+          <td>
+            <strong><%= lead.name %></strong>
+            <span class="muted small"><%= lead.email %><%= lead.phone ? " · " + lead.phone : "" %></span>
+          </td>
+          <td class="muted"><%= lead.business_name || "—" %></td>
+          <td class="muted"><%= lead.interest %></td>
+          <td class="muted"><%= lead.source %></td>
+          <td><span class="badge <%= statusClass(lead.status) %>"><%= lead.status %></span></td>
+          <td>
+            <div class="row">
+              <form method="post" action="/app/leads/<%= lead.id %>/status" class="inline">
+                <input type="hidden" name="_csrf" value="<%= csrf %>" />
+                <select name="status">
+                  <% statuses.forEach(function (status) { %>
+                    <option <%= status === lead.status ? "selected" : "" %>><%= status %></option>
+                  <% }); %>
+                </select>
+                <button class="btn ghost small" type="submit">Set</button>
+              </form>
+              <% if (lead.status !== "Won") { %>
+                <form method="post" action="/app/leads/<%= lead.id %>/convert">
+                  <input type="hidden" name="_csrf" value="<%= csrf %>" />
+                  <button class="btn small" type="submit">Convert</button>
+                </form>
+              <% } %>
+            </div>
+          </td>
+        </tr>
+        <% if (lead.message) { %>
+          <tr class="note-row"><td colspan="6" class="muted small"><%= lead.message %></td></tr>
+        <% } %>
+      <% }); %>
+      <% if (!leads.length) { %><tr><td colspan="6" class="muted">No leads yet.</td></tr><% } %>
+    </tbody>
+  </table>
+</section>
+
+<section class="card">
+  <h2>Denovo handoff</h2>
+  <p class="muted small">
+    New inquiries are pushed to <code>DENOVO_WEBHOOK_URL</code> with an HMAC-SHA256 signature.
+    With no webhook configured they stay here only.
+  </p>
+  <table>
+    <thead><tr><th>Target</th><th>Status</th><th>Error</th><th>When</th></tr></thead>
+    <tbody>
+      <% deliveries.forEach(function (row) { %>
+        <tr>
+          <td class="muted small"><%= row.target %></td>
+          <td><span class="badge <%= row.status === "delivered" ? "teal" : row.status === "skipped" ? "gray" : "amber" %>"><%= row.status %></span></td>
+          <td class="muted small"><%= row.last_error || "—" %></td>
+          <td class="muted"><%= fmtDate(row.created_at) %></td>
+        </tr>
+      <% }); %>
+      <% if (!deliveries.length) { %><tr><td colspan="4" class="muted">No handoffs attempted yet.</td></tr><% } %>
+    </tbody>
+  </table>
+</section>
+
+<%- include("../partials/foot") %>

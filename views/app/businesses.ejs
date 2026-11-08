@@ -1,0 +1,57 @@
+<%- include("../partials/head") %>
+
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Workspace</p>
+    <h1>Businesses</h1>
+  </div>
+  <form class="inline" method="get" action="/app/businesses">
+    <input name="q" value="<%= q %>" placeholder="Search name or owner" />
+    <button class="btn ghost" type="submit">Search</button>
+  </form>
+</div>
+
+<section class="card">
+  <table>
+    <thead>
+      <tr><th>Business</th><th>Owner</th><th>Stage</th><th>Target</th><th>Updated</th></tr>
+    </thead>
+    <tbody>
+      <% businesses.forEach(function (business) { %>
+        <tr>
+          <td><a href="/app/businesses/<%= business.id %>"><%= business.name %></a></td>
+          <td class="muted"><%= business.owner_name || "—" %></td>
+          <td><span class="badge <%= stageClass(business.stage) %>"><%= stageName(business.stage) %></span></td>
+          <td><%= money(business.funding_target) %></td>
+          <td class="muted"><%= fmtDate(business.updated_at) %></td>
+        </tr>
+      <% }); %>
+      <% if (!businesses.length) { %>
+        <tr><td colspan="5" class="muted">No businesses yet. Add the first one below.</td></tr>
+      <% }); %>
+    </tbody>
+  </table>
+</section>
+
+<section class="card">
+  <h2>Add a business</h2>
+  <form method="post" action="/app/businesses" class="grid-form">
+    <input type="hidden" name="_csrf" value="<%= csrf %>" />
+    <label>Business name <input name="name" required maxlength="140" /></label>
+    <label>Entity type
+      <select name="entity_type">
+        <option>LLC</option><option>C-Corp</option><option>S-Corp</option><option>Sole proprietor</option>
+      </select>
+    </label>
+    <label>State <input name="state" maxlength="20" /></label>
+    <label>Owner name <input name="owner_name" maxlength="120" /></label>
+    <label>Owner email <input name="owner_email" type="email" maxlength="160" /></label>
+    <label>Owner phone <input name="owner_phone" maxlength="40" /></label>
+    <label>Funding target <input name="funding_target" inputmode="numeric" placeholder="45000" /></label>
+    <label>Monthly revenue <input name="monthly_revenue" inputmode="numeric" placeholder="12000" /></label>
+    <label>Months in business <input name="months_in_business" inputmode="numeric" placeholder="12" /></label>
+    <div class="span"><button class="btn" type="submit">Create business</button></div>
+  </form>
+</section>
+
+<%- include("../partials/foot") %>

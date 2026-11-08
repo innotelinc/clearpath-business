@@ -1,0 +1,14 @@
+services:
+  clearpath-business:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PORT: "3100"
+      DATA_DIR: /app/data
+      DB_PATH: /app/data/clearpath-business.db
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./data:/app/data

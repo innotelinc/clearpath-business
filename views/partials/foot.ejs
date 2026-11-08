@@ -1,0 +1,16 @@
+    </main>
+
+    <footer class="foot">
+      <div>
+        <p><strong><%= product.name %></strong> by <%= product.company %></p>
+        <p class="muted">Built by <%= product.maker %>. Business credit consulting, not a lender or a credit bureau.</p>
+      </div>
+      <div class="foot-links">
+        <a href="<%= product.site %>"><%= product.domain %></a>
+        <a href="tel:<%= product.phone.replace(/[^0-9+]/g, "") %>"><%= product.phone %></a>
+        <a href="/legal/privacy">Privacy</a>
+        <a href="/legal/terms">Terms</a>
+      </div>
+    </footer>
+  </body>
+</html>

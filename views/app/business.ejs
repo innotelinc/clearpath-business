@@ -1,0 +1,186 @@
+<%- include("../partials/head") %>
+
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><a href="/app/businesses">Businesses</a> / <%= business.name %></p>
+    <h1><%= business.name %></h1>
+    <p class="muted">
+      <%= business.entity_type %> · <%= business.state || "state not set" %> ·
+      DUNS <%= business.duns || "not requested" %> · <%= money(business.monthly_revenue) %>/mo ·
+      <%= business.months_in_business %> months in business
+    </p>
+  </div>
+  <span class="badge big <%= stageClass(business.stage) %>"><%= stageTier(business.stage) %> · <%= stageName(business.stage) %></span>
+</div>
+
+<section class="grid-two">
+  <div class="card">
+    <h2>Move the stage</h2>
+    <form method="post" action="/app/businesses/<%= business.id %>/stage" class="stack">
+      <input type="hidden" name="_csrf" value="<%= csrf %>" />
+      <label>New stage
+        <select name="stage">
+          <% stages.forEach(function (stage) { %>
+            <option value="<%= stage.key %>" <%= stage.key === business.stage ? "selected" : "" %>><%= stage.tier %> — <%= stage.name %></option>
+          <% }); %>
+        </select>
+      </label>
+      <label>Note <input name="note" maxlength="300" placeholder="What changed?" /></label>
+      <button class="btn" type="submit">Save stage</button>
+    </form>
+    <% if (history.length) { %>
+      <ul class="list tight">
+        <% history.forEach(function (event) { %>
+          <li class="muted small"><%= stageTier(event.from_stage) %> → <%= stageTier(event.to_stage) %> · <%= event.actor %> · <%= fmtDate(event.created_at) %></li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </div>
+
+  <div class="card">
+    <h2>Owner and target</h2>
+    <p><strong><%= business.owner_name || "No owner on file" %></strong></p>
+    <p class="muted"><%= business.owner_email || "—" %> · <%= business.owner_phone || "—" %></p>
+    <p class="muted">Funding target: <strong><%= money(business.funding_target) %></strong></p>
+    <form method="post" action="/app/businesses/<%= business.id %>/notes" class="stack">
+      <input type="hidden" name="_csrf" value="<%= csrf %>" />
+      <label>Notes <textarea name="notes" rows="4" maxlength="2000"><%= business.notes %></textarea></label>
+      <button class="btn ghost" type="submit">Save notes</button>
+    </form>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Tradelines</h2>
+  <table>
+    <thead><tr><th>Vendor</th><th>Tier</th><th>Type</th><th>Limit</th><th>Reports to</th><th>Status</th><th>Opened</th></tr></thead>
+    <tbody>
+      <% tradelines.forEach(function (line) { %>
+        <tr>
+          <td><%= line.vendor %></td>
+          <td><%= stageTier(line.tier) %></td>
+          <td class="muted"><%= line.account_type %></td>
+          <td><%= money(line.limit_amount) %></td>
+          <td class="muted small"><%= line.reports_to %></td>
+          <td><span class="badge <%= statusClass(line.status) %>"><%= line.status %></span></td>
+          <td class="muted"><%= fmtDate(line.opened_on) %></td>
+        </tr>
+      <% }); %>
+      <% if (!tradelines.length) { %><tr><td colspan="7" class="muted">Nothing reporting yet.</td></tr><% } %>
+    </tbody>
+  </table>
+
+  <form method="post" action="/app/businesses/<%= business.id %>/tradelines" class="grid-form">
+    <input type="hidden" name="_csrf" value="<%= csrf %>" />
+    <label>Vendor <input name="vendor" required maxlength="120" /></label>
+    <label>Tier
+      <select name="tier">
+        <option value="1">Tier 1 · vendor</option>
+        <option value="2">Tier 2 · retail</option>
+        <option value="3">Tier 3 · bank</option>
+      </select>
+    </label>
+    <label>Account type
+      <select name="account_type">
+        <option>Net-30</option><option>Revolving</option><option>Fuel</option><option>Line of credit</option><option>Term loan</option>
+      </select>
+    </label>
+    <label>Limit <input name="limit_amount" inputmode="numeric" placeholder="500" /></label>
+    <label>Status
+      <select name="status"><option>Open</option><option>Closed</option><option>Pending</option></select>
+    </label>
+    <label>Opened on <input name="opened_on" type="date" /></label>
+    <div class="span"><button class="btn" type="submit">Add tradeline</button></div>
+  </form>
+</section>
+
+<section class="grid-two">
+  <div class="card">
+    <h2>Bureau scores</h2>
+    <table>
+      <thead><tr><th>Bureau</th><th>Metric</th><th>Score</th><th>Pulled</th></tr></thead>
+      <tbody>
+        <% bureaus.forEach(function (report) { %>
+          <tr>
+            <td><%= report.bureau %></td>
+            <td class="muted"><%= report.metric || "—" %></td>
+            <td><strong><%= report.score %></strong></td>
+            <td class="muted"><%= fmtDate(report.pulled_on) %></td>
+          </tr>
+        <% }); %>
+        <% if (!bureaus.length) { %><tr><td colspan="4" class="muted">No bureau pulls recorded.</td></tr><% } %>
+      </tbody>
+    </table>
+
+    <form method="post" action="/app/businesses/<%= business.id %>/bureau" class="grid-form">
+      <input type="hidden" name="_csrf" value="<%= csrf %>" />
+      <label>Bureau
+        <select name="bureau"><option>D&B</option><option>Experian</option><option>Equifax</option></select>
+      </label>
+      <label>Metric <input name="metric" maxlength="60" placeholder="PAYDEX" /></label>
+      <label>Score <input name="score" inputmode="numeric" min="0" max="100" /></label>
+      <label>Pulled on <input name="pulled_on" type="date" /></label>
+      <div class="span"><button class="btn" type="submit">Record pull</button></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Tasks</h2>
+    <ul class="list">
+      <% tasks.forEach(function (task) { %>
+        <li>
+          <div>
+            <strong><%= task.title %></strong>
+            <span class="muted"><%= task.owner %> · due <%= fmtDay(task.due_on) %></span>
+          </div>
+          <form method="post" action="/app/businesses/<%= business.id %>/tasks/<%= task.id %>">
+            <input type="hidden" name="_csrf" value="<%= csrf %>" />
+            <input type="hidden" name="status" value="<%= task.status === "Done" ? "Open" : "Done" %>" />
+            <button class="link" type="submit"><%= task.status === "Done" ? "Reopen" : "Mark done" %></button>
+          </form>
+        </li>
+      <% }); %>
+      <% if (!tasks.length) { %><li class="muted">No tasks.</li><% } %>
+    </ul>
+    <form method="post" action="/app/businesses/<%= business.id %>/tasks" class="stack">
+      <input type="hidden" name="_csrf" value="<%= csrf %>" />
+      <label>Task <input name="title" required maxlength="200" /></label>
+      <label>Due <input name="due_on" type="date" /></label>
+      <button class="btn ghost" type="submit">Add task</button>
+    </form>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Documents</h2>
+  <table>
+    <thead><tr><th>Title</th><th>Kind</th><th>Status</th><th>Logged</th></tr></thead>
+    <tbody>
+      <% documents.forEach(function (doc) { %>
+        <tr>
+          <td><% if (doc.url) { %><a href="<%= doc.url %>"><%= doc.title %></a><% } else { %><%= doc.title %><% } %></td>
+          <td class="muted"><%= doc.kind %></td>
+          <td><span class="badge <%= statusClass(doc.status) %>"><%= doc.status %></span></td>
+          <td class="muted"><%= fmtDate(doc.created_at) %></td>
+        </tr>
+      <% }); %>
+      <% if (!documents.length) { %><tr><td colspan="4" class="muted">No documents logged.</td></tr><% } %>
+    </tbody>
+  </table>
+  <form method="post" action="/app/businesses/<%= business.id %>/documents" class="grid-form">
+    <input type="hidden" name="_csrf" value="<%= csrf %>" />
+    <label>Title <input name="title" required maxlength="160" /></label>
+    <label>Kind
+      <select name="kind">
+        <option>Formation</option><option>EIN</option><option>Bank statement</option><option>Licence</option><option>Other</option>
+      </select>
+    </label>
+    <label>Status
+      <select name="status"><option>Received</option><option>Requested</option></select>
+    </label>
+    <label>Link <input name="url" maxlength="400" placeholder="https://…" /></label>
+    <div class="span"><button class="btn" type="submit">Log document</button></div>
+  </form>
+</section>
+
+<%- include("../partials/foot") %>

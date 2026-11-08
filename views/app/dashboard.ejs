@@ -1,0 +1,73 @@
+<%- include("../partials/head") %>
+
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Workspace</p>
+    <h1><%= tenant ? tenant.brand_name : product.name %></h1>
+    <p class="muted">Business credit build · Denovo Credit</p>
+  </div>
+  <a class="btn" href="/app/businesses">New business</a>
+</div>
+
+<section class="stats">
+  <div class="card stat"><strong><%= stats.businesses %></strong><span>Businesses</span></div>
+  <div class="card stat"><strong><%= stats.tradelines %></strong><span>Tradelines reporting</span></div>
+  <div class="card stat"><strong><%= stats.leads %></strong><span>New leads</span></div>
+  <div class="card stat"><strong><%= stats.tasks %></strong><span>Open tasks</span></div>
+</section>
+
+<section class="pipeline">
+  <% pipelineData.forEach(function (stage) { %>
+    <div class="column">
+      <header>
+        <span class="tier"><%= stage.tier %></span>
+        <strong><%= stage.name %></strong>
+        <span class="muted"><%= stage.businesses.length %></span>
+      </header>
+      <% stage.businesses.forEach(function (business) { %>
+        <a class="card mini" href="/app/businesses/<%= business.id %>">
+          <strong><%= business.name %></strong>
+          <span class="muted"><%= business.owner_name || "No owner on file" %></span>
+          <span class="badge <%= stageClass(business.stage) %>"><%= money(business.funding_target) %> target</span>
+        </a>
+      <% }); %>
+      <% if (!stage.businesses.length) { %><p class="muted small">Nothing here yet.</p><% } %>
+    </div>
+  <% }); %>
+</section>
+
+<section class="grid-two">
+  <div class="card">
+    <h2>Latest leads</h2>
+    <ul class="list">
+      <% leads.forEach(function (lead) { %>
+        <li>
+          <div>
+            <strong><%= lead.name %></strong>
+            <span class="muted"><%= lead.business_name || "No business name" %> · <%= lead.interest %></span>
+          </div>
+          <span class="badge <%= statusClass(lead.status) %>"><%= lead.status %></span>
+        </li>
+      <% }); %>
+      <% if (!leads.length) { %><li class="muted">No leads yet.</li><% } %>
+    </ul>
+    <a class="link" href="/app/leads">Open the lead inbox</a>
+  </div>
+
+  <div class="card">
+    <h2>Recent stage moves</h2>
+    <ul class="list">
+      <% recent.forEach(function (event) { %>
+        <li>
+          <div>
+            <strong><%= stageTier(event.from_stage) %> → <%= stageTier(event.to_stage) %></strong>
+            <span class="muted"><%= event.actor %> · <%= fmtDate(event.created_at) %></span>
+          </div>
+        </li>
+      <% }); %>
+      <% if (!recent.length) { %><li class="muted">No stage changes recorded yet.</li><% } %>
+    </ul>
+  </div>
+</section>
+
+<%- include("../partials/foot") %>

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title><%= typeof title !== "undefined" ? title : product.name %></title>
+    <meta
+      name="description"
+      content="ClearPath Business by Denovo Credit — the business credit build workspace: foundation, reporting tradelines, bureau tracking and funding readiness."
+    />
+    <link rel="stylesheet" href="/assets/css/app.css" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  </head>
+  <body class="<%= typeof page !== 'undefined' ? page : '' %>">
+    <header class="topbar">
+      <a class="brand" href="/">
+        <span class="brand-mark">CP</span>
+        <span class="brand-text">
+          <strong><%= product.name %></strong>
+          <small>by <%= product.company %></small>
+        </span>
+      </a>
+      <nav class="topnav">
+        <% if (user) { %>
+          <% if (user.role === "client") { %>
+            <a href="/portal">My file</a>
+          <% } else { %>
+            <a href="/app">Workspace</a>
+            <a href="/app/businesses">Businesses</a>
+            <a href="/app/leads">Leads<% if (nav && nav.leads) { %> <span class="count"><%= nav.leads %></span><% } %></a>
+          <% } %>
+          <form method="post" action="/logout">
+            <input type="hidden" name="_csrf" value="<%= csrf %>" />
+            <button class="link" type="submit">Sign out</button>
+          </form>
+        <% } else { %>
+          <a href="/#intake">Request a review</a>
+          <a class="pill ghost" href="/portal/login">Client sign in</a>
+          <a class="pill" href="/login">Staff sign in</a>
+        <% } %>
+      </nav>
+    </header>
+
+    <% if (notice) { %><p class="flash ok"><%= notice %></p><% } %>
+    <% if (error) { %><p class="flash bad"><%= error %></p><% } %>
+
+    <main class="page">
